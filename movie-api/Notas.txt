@@ -1,0 +1,76 @@
+Minuta de Reunión - Desarrollo de API
+
+
+	Models
+		Entities : definición de estructura de datos
+			
+			User: id, name, lastName, password, email, userName, Role (admin/client)
+				- Admin: employeeNum
+				- Client
+			
+			Movie: id, title, date,director, idAdmin, state
+
+			Booking: id, idUser, bookingDate, returnDate, state
+
+			BookingDetails: id, bookingDate, cooment, idBooking, idMovie, returnDate, state
+
+
+ Hay dos roles :
+				usuario => admin 
+						El administrador puede:
+							//aca agregar que el admin tienee todas las funcionalidades del cliente +
+							- Crear otros admins y clientes.
+							- Buscar pelicula por su id
+							- Ver todas las peliculas en todos sus estados
+							- Retornar una reserva ingresando el ID del usuario.
+							- Agregar, eliminar y editar películas en la base de datos.
+							- Buscar usuarios por ID o email.
+							- Ver todos los usuarios, admins y clientes.
+							- Actualizar datos de usuario.
+
+
+
+				usuario => client
+						 El cliente puede:
+						 	- Registrarse.
+							- Buscar películas por título.
+							- Ver todas las películas disponibles.
+							- Crear nuevas reservas a su nombre.
+							- Visualizar su historial de reservas.
+
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+Funcionalidades de la Aplicación:
+
+• Registro de Usuario:
+Los usuarios pueden registrarse en la aplicación.
+
+• Visualización de Películas:
+Los usuarios pueden ver todas las películas disponibles.
+
+• Búsqueda de Películas:
+Los usuarios pueden buscar películas por título.
+
+• Reservas:
+Los usuarios, al estar logueados, pueden crear una nueva reserva ingresando el título de la película de su interés.
+Cada usuario puede reservar hasta dos películas simultáneamente.
+
+• Duración de la Reserva:
+Las reservas se mantienen activas durante 72 horas.
+
+• Devolución de Reservas:
+Solo el administrador tiene el derecho de ingresar el ID del cliente para devolver sus reservas.
+
+•Generación de Nuevas Reservas:
+Después de devolver una reserva, el usuario puede generar una nueva.
+
+•Restricciones de Reservas:
+Si una reserva no se ha devuelto después de 72 horas, el usuario no podrá realizar nuevas reservas hasta que la reserva pendiente sea devuelta.
+
+•Historial de Reservas:
+Los clientes pueden ver su historial de reservas.
+
+•Reservas Pendientes:
+Los usuarios pueden verificar si tienen reservas pendientes.
