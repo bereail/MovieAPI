@@ -6,6 +6,7 @@ using MOVIE_API.Models;
 using MOVIE_API.Models.DTO;
 using MOVIE_API.Models.Enum;
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace movie_api.Services.Interfaces
 {
@@ -20,9 +21,7 @@ namespace movie_api.Services.Interfaces
 
 
         //Ingresando un id de User, agrega una bookingDetail asociada 
-        CreateBooking CreateBookingDetail(int userId, BookingDetailPostDto bookingDetailPostDto);
-
-
+        CreateBooking CreateBookingDetail(int userId, ClaimsPrincipal user, BookingDetailPostDto bookingDetailPostDto);
 
 
         //Modifica el estado de una booking -> Admin
@@ -48,6 +47,13 @@ namespace movie_api.Services.Interfaces
 
 
         //Trae todo el historial de rservas de un usuario
-        List<BookingHistoryDto> GetHistory(int userId, bool isAdmin);
+        List<BookingHistoryDto> GetHistory(int userId, ClaimsPrincipal user);
+
+
+        //Desactivar un usuario 
+        BaseResponse DesactivateUser(int idUser, ClaimsPrincipal user);
+
+        //Verifica si el usario tiene reservas o no antes de ser desactivado
+        bool HasPendingBookings(int userId);
     }
 }

@@ -39,7 +39,8 @@ namespace MOVIE_API.Services.Implementations
                             Lastname = clientDto.Lastname,
                             Email = clientDto.Email,
                             Pass = clientDto.Pass,
-                            Rol = "Client"
+                            Rol = "Client",
+                            IsActive = clientDto.IsActive,
                         };
 
                     // Crear un nuevo objeto de tipo Client 

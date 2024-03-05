@@ -44,7 +44,7 @@ namespace movie_api.Controllers
         //Trae todas las peliculas y las ordenas segun su state
         //Solo el admin puede ver todas las peliculas
         //El user solo puede ver las pelicula disponibles
-        [HttpGet("grouped-by-state")]
+       /* [HttpGet("grouped-by-state")]
         public IActionResult GetMoviesGroupedByState()
         {
             try
@@ -84,13 +84,39 @@ namespace movie_api.Controllers
                 Console.WriteLine($"Error al obtener películas agrupadas por estado: {ex.Message}");
                 return StatusCode(500, "Error interno del servidor");
             }
+        }*/
+
+
+        //prueba para el get d reat
+        [HttpGet("movies")]
+        public IActionResult GetMoviesGroupedByState()
+        {
+            try
+            {
+                // Obtener todas las películas agrupadas por estado
+                var moviesGroupedByState = _movieService.GetMoviesGroupedByState();
+
+                // Aquí puedes seguir con la lógica según tus necesidades sin necesidad de verificar roles.
+
+                IEnumerable<MovieDto> groupedMovies = moviesGroupedByState
+                    .SelectMany(entry => entry.Value)
+                    .OrderBy(movieDto => movieDto.State)
+                    .ToList();
+
+                return Ok(groupedMovies);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al obtener películas agrupadas por estado: {ex.Message}");
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
 
 
 
         //----------------------------------------------------------------------------------------------------
         //Post para crear peliculas -> Admin
-               
+
         [HttpPost("createMovie")]
         [Authorize(Roles = "Admin")]
         public IActionResult CreateMovie([FromBody] MoviePostDto moviePostDto)

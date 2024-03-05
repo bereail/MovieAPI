@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace MOVIE_API.Models.DTO
 {
@@ -17,5 +18,9 @@ namespace MOVIE_API.Models.DTO
 
         [Required]
         public string EmployeeNum { get; set; }
+
+        [JsonIgnore]
+        // Establecer IsActive a true por defecto
+        public bool IsActive { get; set; } = true;
     }
 }

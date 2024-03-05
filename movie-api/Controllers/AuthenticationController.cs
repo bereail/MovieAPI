@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using movie_api.Model.Dto;
 using movie_api.Models.DTO;
+using movie_api.Services.Implementations;
 using movie_api.Services.Interfaces;
 using MOVIE_API.Models;
 using System;
@@ -19,11 +21,13 @@ namespace MOVIE_API.Controllers
     {
         private readonly IConfiguration _config;
         private readonly IAuthenticationService _authenticationService;
+        private readonly IUserComparisonService _userComparisonService;
 
-        public AuthenticationController(IConfiguration config, IAuthenticationService authenticationService)
+        public AuthenticationController(IConfiguration config, IAuthenticationService authenticationService, IUserComparisonService userComparisonService)
         {
             _config = config; 
             _authenticationService = authenticationService;
+            _userComparisonService = userComparisonService;
         }
 
         [HttpPost("authenticate")] //usamos POST ya que debemos enviar los datos para hacer el login
@@ -32,8 +36,20 @@ namespace MOVIE_API.Controllers
             //Validar credenciales
             var user = ValidateCredentials(authenticationRequestBody);
 
+
+            // Verificar si las credenciales son válidas
             if (user is null)
-                return Unauthorized();
+            {
+                //Credenciales invalidas
+                return Unauthorized("Credenciales no válidas");
+            }
+
+            // Verificar si la cuenta está deshabilitada
+            if (!user.IsActive)
+            {
+                return Unauthorized("La cuenta está deshabilitada");
+            }
+
 
             //Creo el Token
             var securityPassword = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_config["Authentication:SecretForKey"]));
@@ -56,6 +72,7 @@ namespace MOVIE_API.Controllers
             var tokenToReturn = new JwtSecurityTokenHandler()
                 .WriteToken(jwtSecurityToken);
 
+            // Retornar el token JWT
             return Ok(tokenToReturn);
         }
 
@@ -63,5 +80,18 @@ namespace MOVIE_API.Controllers
         {
             return _authenticationService.ValidateUser(authenticationRequestBody);
         }
+
+
+
+        //Funcion para comprobar si el usuario autenticado coincide con el id ingresado o si es admin
+
+        [HttpGet("getUser/{id}")]
+        public ActionResult<bool> CompareUser(int id)
+        {
+            var result = _userComparisonService.CompareUserIdWithLoggedInUser(id, User);
+
+            return Ok(result);
+        }
+
     }
 }

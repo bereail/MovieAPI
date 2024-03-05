@@ -6,5 +6,7 @@ namespace movie_api.Services.Interfaces
     {
         //funcion para crear un nuevo cliente
         int CreateClient(ClientCreateDto clientDto);
+
+
     }
 }

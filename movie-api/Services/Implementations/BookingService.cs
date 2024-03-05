@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
+using movie_api.Models.DTO;
+using System.Security.Claims;
 
 namespace movie_api.Services.Implementations
 {
@@ -19,14 +21,16 @@ namespace movie_api.Services.Implementations
         private readonly movieDbContext _movieDbContext; //Context
         private readonly IUserService _userService;  // Interfaz de user
         private readonly IMovieService _movieService;  // Interfaz de reservas
+        private readonly IUserComparisonService _userComparisonService;
 
         public string MovieName { get; private set; }
 
-        public BookingService(movieDbContext movieDbContext, IUserService userService, IMovieService movieService)
+        public BookingService(movieDbContext movieDbContext, IUserService userService, IMovieService movieService, IUserComparisonService userComparisonService)
         {
             _movieDbContext = movieDbContext;
             _userService = userService;
             _movieService = movieService;
+            _userComparisonService = userComparisonService;
         }
 
         //-------------------------------------------------------------------------------------------------------------------------
@@ -205,17 +209,18 @@ namespace movie_api.Services.Implementations
         //-----------------------------------------------------------------------------------------------------------------------------
         // Crea un nueva booking detail ingresando el id de un usuario, un booking no puede tener más de dos details -> CHECK
         // Modificar la firma del método para aceptar una lista de BookingDetailPostDto
-        public CreateBooking CreateBookingDetail(int userId, BookingDetailPostDto bookingDetailPostDto)
+        public CreateBooking CreateBookingDetail(int userId, ClaimsPrincipal user, BookingDetailPostDto bookingDetailPostDto)
         {
             try
             {
-                // Verificar si el usuario existe
-                var user = _userService.GetUserById(userId);
-
-                if (user == null)
+                // Verificar si el usuario autenticado es un administrador
+                bool isAdmin = user.IsInRole("Admin");
+                // Comparar el ID del usuario autenticado con el ID de usuario proporcionado o verificar si es un administrador
+                if (!_userComparisonService.CompareUserIdWithLoggedInUser(userId, user) && !isAdmin)
                 {
-                    return new CreateBooking { Success = false, Message = "El usuario no existe." };
+                    return new CreateBooking { Success = false, Message = "No tienes permisos para realizar esta acción." };
                 }
+
 
                 // Obtener el último estado de la reserva asociada al usuario
                 var lastBookingState = GetStateLastBooking(userId);
@@ -403,19 +408,23 @@ namespace movie_api.Services.Implementations
         //-------------------------------------------------------------------------------------------------
         //Trae todo el historial de rservas de un usuario
 
-        public List<BookingHistoryDto> GetHistory(int userId, bool isAdmin)
+        public List<BookingHistoryDto> GetHistory(int userId, ClaimsPrincipal user)
         {
             List<int> bookingIds;
 
-            if (isAdmin)
+            // Verificar si el usuario autenticado es un administrador
+            bool isAdmin = user.IsInRole("Admin");
+
+            // Comparar el ID del usuario autenticado con el ID de usuario proporcionado o verificar si es un administrador
+            if (_userComparisonService.CompareUserIdWithLoggedInUser(userId, user) || isAdmin)
             {
-                // Si es un administrador, obtiene todas las BookingIds asociadas a un user
+                // Obtener las BookingIds asociadas al usuario
                 bookingIds = _userService.GetBookingIdsByUserId(userId);
             }
             else
             {
-                // Si es un cliente, las BookingIds asociadas al propio cliente
-                bookingIds = _userService.GetBookingIdsByUserId(userId);
+                // Usuario no autorizado para ver el historial
+                return new List<BookingHistoryDto>();
             }
 
             var bookingHistoryDtos = new List<BookingHistoryDto>();
@@ -444,7 +453,7 @@ namespace movie_api.Services.Implementations
             return bookingHistoryDtos;
         }
 
-    
+
 
 
         //---------------------------------------------------------------------------------------------------------
@@ -658,10 +667,120 @@ namespace movie_api.Services.Implementations
                 };
             }
         }
-    }
+
+
+
+
+        //--------------------------------------------------------------------------------------------------------------------------------------
+        //Desactivar un usuario
+        public BaseResponse DesactivateUser(int idUser, ClaimsPrincipal user)
+        {
+            var existingUser = _userService.GetUserById(idUser);
+
+            if (existingUser != null)
+            {
+                try
+                {
+                    // Verificar si el usuario actual tiene permiso para desactivar la cuenta del usuario específico
+                    if (!_userComparisonService.CompareUserIdWithLoggedInUser(idUser, user))
+                    {
+                        return new BaseResponse
+                        {
+
+                            Result = false,
+                            Message = "No tienes permisos para desactivar la cuenta de este usuario."
+                        };
+
+                    }
+
+                    // Verificar si el usuario tiene reservas pendientes
+                    if (HasPendingBookings(idUser))
+                    {
+                        return new BaseResponse
+                        {
+                            Result = false,
+                            Message = "No puedes desactivar la cuenta de este usuario porque tiene reservas pendientes."
+                        };
+                    }
+
+                    // Cambiar el estado IsActive a false o eliminar físicamente el usuario según el rol
+                    if (existingUser.Rol == "Admin")
+                    {
+                        // Eliminar físicamente si es un administrador
+                        _movieDbContext.Users.Remove(existingUser);
+                    }
+                    else
+                    {
+                        // Desactivar la cuenta si es un cliente
+                        existingUser.IsActive = false;
+                    }
+
+                    _movieDbContext.SaveChanges();
+
+                    return new BaseResponse
+                    {
+                        Result = true,
+                        Message = "Usuario desactivado correctamente."
+                    };
+                }
+                catch (Exception ex)
+                {
+                    return new BaseResponse
+                    {
+                        Result = false,
+                        Message = $"Error al desactivar el usuario: {ex.Message}"
+                    };
+                }
+            }
+            else
+            {
+                return new BaseResponse
+                {
+                    Result = false,
+                    Message = "El usuario no existe."
+                };
+            }
+        }
+
+
+
+        //Verifica si el usario tiene reservas o no antes de ser desactivado
+
+        public bool HasPendingBookings(int userId)
+        {
+            try
+            {
+                // Obtener la última reserva asociada al userId
+                var lastBookingId = GetLastBookingIdByUserId(userId);
+
+                // Si se encuentra una reserva
+                if (lastBookingId > 0)
+                {
+                    // Obtener el estado de la última reserva
+                    var bookingState = GetBookingState(lastBookingId);
+
+                    // Verificar si el estado es "Pending"
+                    if (bookingState == BookingState.Pending)
+                    {
+                        return true; // El usuario tiene reservas pendientes
+                    }
+                }
+
+                return false; // El usuario no tiene reservas pendientes o no se encontró una reserva
+            }
+            catch (Exception ex)
+            {
+                // Manejar la excepción según tus necesidades
+                Console.WriteLine($"Error al verificar reservas pendientes: {ex.Message}");
+                return false;
+            }
+        }
 
 
     }
+
+
+}
 
 
 

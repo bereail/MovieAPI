@@ -19,7 +19,19 @@ namespace movie_api.Services.Implementations
             if (string.IsNullOrEmpty(authenticationRequestBody.Email) || string.IsNullOrEmpty(authenticationRequestBody.Password))
                 return null;
 
-            return _userService.ValidateUser(authenticationRequestBody);
+            // Validar las credenciales del usuario
+            var user = _userService.ValidateUser(authenticationRequestBody);
+
+            // Verificar si el usuario es nulo o si la cuenta está deshabilitada
+            if (user is null || !user.IsActive)
+            {
+                return null;
+            }
+
+            return user;
         }
+
+
+
     }
 }

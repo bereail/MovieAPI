@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace MOVIE_API.Models;
 
@@ -38,7 +39,9 @@ public partial class User
     [Column("rol")]
     public string Rol { get; set; }
 
+    [Column("IsActive")]
 
+    public bool IsActive {get; set; }
     public virtual ICollection<Admin> Admins { get; set; } = new List<Admin>();
 
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();

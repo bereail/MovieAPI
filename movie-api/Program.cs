@@ -92,7 +92,7 @@ builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<movie_api.Services.Interfaces.IAuthenticationService, AuthenticateService>();
-
+builder.Services.AddScoped<IUserComparisonService, UserComparisonService>();
 
 var app = builder.Build();
 

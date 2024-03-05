@@ -1,6 +1,7 @@
 ﻿using movie_api.Model.Dto;
 using movie_api.Models.DTO;
 using MOVIE_API.Models;
+using System.Security.Claims;
 
 namespace movie_api.Services.Interfaces
 {
@@ -38,6 +39,12 @@ namespace movie_api.Services.Interfaces
 
         //Editar los datos de un usuario -> Admin
         public BaseResponse UpdateUser(UserUpdateDto updatedUser);
+
+
+
+
+        //Reactivar un usuario
+        BaseResponse ReactivateUser(int idUser, ClaimsPrincipal user);
 
     }
 }

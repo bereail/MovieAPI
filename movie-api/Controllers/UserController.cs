@@ -12,7 +12,7 @@ namespace MOVIE_API.Controllers
  
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+  
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -27,7 +27,7 @@ namespace MOVIE_API.Controllers
 
         //----------------------------------------------------------------------------------------------------------------------------------------
         //Trae un usuario por su id -> Admin
-
+        [Authorize(Roles = "Admin")]
         [HttpGet("getUserById/{id}")]
 
         public IActionResult GetUserById(int id)
@@ -58,6 +58,7 @@ namespace MOVIE_API.Controllers
         //Obtener las booking asociadas ingresando el id user -> Admin
 
         [HttpGet("{userId}/bookingIds")]
+        [Authorize(Roles = "Admin")]
 
         public ActionResult<List<int>> GetBookingIds(int userId)
         {
@@ -79,6 +80,7 @@ namespace MOVIE_API.Controllers
         //Funciòn para traer todos los usuarios -> Admin
 
         [HttpGet("users")]
+        [Authorize(Roles = "Admin")]
 
         public IActionResult GetUsers()
         {
@@ -97,6 +99,7 @@ namespace MOVIE_API.Controllers
         // Función para obtener todos los administradores  -> Admin
 
         [HttpGet("getAdmins")]
+        [Authorize(Roles = "Admin")]
 
         public IActionResult GetAdmins()
         {
@@ -116,7 +119,7 @@ namespace MOVIE_API.Controllers
 
         //Funciòn para traer a todos los clientes  -> Admin
         [HttpGet("getClients")]
-
+        [Authorize(Roles = "Admin")]
         public IActionResult GetClients()
         {
             try
@@ -137,7 +140,7 @@ namespace MOVIE_API.Controllers
         //----------------------------------------------------------------------------------------------------------------------------------------
         //Editar los datos de un usuario
         [HttpPut("{id}")]
-
+        [Authorize(Roles = "Admin")]
         public IActionResult UpdateUser(int id, [FromBody] UserUpdateDto updatedUser)
         {
             if (updatedUser == null || id != updatedUser.Id || !ModelState.IsValid)
@@ -156,6 +159,27 @@ namespace MOVIE_API.Controllers
                 return NotFound(result);
             }
         }
+
+
+
+        //--------------------------------------------------------------------------------------------------------------------------------------
+        //Reactiar un usuario eliminado
+
+        [HttpPatch("{id}/reactivate")]
+        public IActionResult ReactivateUser(int id)
+        {
+            var result = _userService.ReactivateUser(id, User);
+
+            if (result.Result)
+            {
+                return Ok(new { message = result.Message });
+            }
+            else
+            {
+                return BadRequest(new { message = result.Message });
+            }
+        }
+
 
     }
 }

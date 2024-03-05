@@ -48,10 +48,10 @@ namespace movie_api.Controllers
 
         //CREAR RESERVA -> Admin
         [HttpPost("create-booking-detail/{userId}")]
-        [Authorize(Roles = "Admin")]
-        public IActionResult CreateBookingDetail(int userId, BookingDetailPostDto bookingDetailPostDto)
+        [Authorize(Roles = "Admin,Client")]
+        public IActionResult CreateBookingDetail(int userId, [FromBody] BookingDetailPostDto bookingDetailPostDto)
         {
-            var result = _bookingService.CreateBookingDetail(userId, bookingDetailPostDto);
+            var result = _bookingService.CreateBookingDetail(userId, User, bookingDetailPostDto);
 
             if (result.Success)
             {
@@ -116,17 +116,24 @@ namespace movie_api.Controllers
 
         //Trae todo el historial de rservas de un usuario
         // Endpoint para obtener el historial de reservas de un usuario
+        // Endpoint para obtener el historial de reservas de un usuario
         [HttpGet("history/{userId}")]
         [Authorize(Roles = "Admin,Client")] // Permite tanto a Admin como a Client acceder a este endpoint
         public IActionResult GetBookingHistory(int userId)
         {
             try
             {
-                // Verifica si es Admin
-                bool isAdmin = User.IsInRole("Admin");
+                // Obtén el usuario autenticado
+                var user = HttpContext.User;
 
-               
-                var bookingHistory = _bookingService.GetHistory(userId, isAdmin);
+                // Llama al servicio para obtener el historial de reservas
+                var bookingHistory = _bookingService.GetHistory(userId, user);
+
+                // Verifica si el historial es nulo o vacío
+                if (bookingHistory == null || bookingHistory.Count == 0)
+                {
+                    return NotFound("No se encontró historial de reservas para el usuario.");
+                }
 
                 return Ok(bookingHistory);
             }
@@ -134,8 +141,23 @@ namespace movie_api.Controllers
             {
                 return StatusCode(500, $"Error al obtener historial de reservas: {ex.Message}");
             }
-        }
+        } 
 
+        //----------------------------------------------------------------------------------------------------------------------------------------
+        //Eliminar usuario
+
+        [HttpPut("{id}/deactivate")]
+        public IActionResult DeactivateUser(int id)
+        {
+            var response = _bookingService.DesactivateUser(id, User);
+
+            if (response.Result)
+            {
+                return Ok(response);
+            }
+
+            return BadRequest(response);
+        }
 
     }
 }

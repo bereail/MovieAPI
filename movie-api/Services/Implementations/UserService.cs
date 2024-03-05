@@ -7,17 +7,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using movie_api.Model.Dto;
 using movie_api.Model.Enum;
+using System.Security.Claims;
 
 namespace movie_api.Services.Implementations
 {
     public class UserService : IUserService
     {
         private readonly movieDbContext _movieDbContext;
+        private readonly IUserComparisonService _userComparisonService;
 
 
-        public UserService(movieDbContext movieDbContext)
+        public UserService(movieDbContext movieDbContext, IUserComparisonService userComparisonService)
         {
             _movieDbContext = movieDbContext;
+            _userComparisonService = userComparisonService;
         }
 
 
@@ -29,9 +32,31 @@ namespace movie_api.Services.Implementations
                 user.Email == authenticationRequestBody.Email && user.Pass == authenticationRequestBody.Password);
         }
 
-        public BaseResponse Login(string email, string password)
+
+
+
+        public void DisableAccount(int userId)
         {
-            BaseResponse response = new BaseResponse();          
+            // Obtener el usuario de la base de datos usando GetUserById
+            var user = GetUserById(userId);
+
+            // Verificar si el usuario existe y no está deshabilitado
+            if (user != null && user.IsActive)
+            {
+                // Deshabilitar la cuenta
+                user.IsActive = false;
+
+                // Guardar los cambios en la base de datos
+                _movieDbContext.SaveChanges();
+            }
+
+        }
+
+
+
+            public BaseResponse Login(string email, string password)
+        {
+            BaseResponse response = new BaseResponse();
             User? userForLogin = GetUserByEmail(email);
 
 
@@ -243,7 +268,62 @@ namespace movie_api.Services.Implementations
             }
         }
 
-       
+
+
+
+
+
+
+        //--------------------------------------------------------------------------------------------------------------------------------------
+        //Reactiar un usuario desactivado
+        public BaseResponse ReactivateUser(int idUser, ClaimsPrincipal user)
+        {
+            var existingUser = GetUserById(idUser);
+
+            if (existingUser != null)
+            {
+                try
+                {
+                    // Verificar si el usuario actual tiene permiso para reactivar la cuenta del usuario específico
+                    if (!_userComparisonService.CompareUserIdWithLoggedInUser(idUser, user))
+                    {
+                        return new BaseResponse
+                        {
+                            Result = false,
+                            Message = "No tienes permisos para reactivar la cuenta de este usuario."
+                        };
+                    }
+
+                    // Cambiar el estado IsActive a true para reactivar el usuario
+                    existingUser.IsActive = true;
+
+                    _movieDbContext.SaveChanges();
+
+                    return new BaseResponse
+                    {
+                        Result = true,
+                        Message = "Usuario reactivado correctamente."
+                    };
+                }
+                catch (Exception ex)
+                {
+                    return new BaseResponse
+                    {
+                        Result = false,
+                        Message = $"Error al reactivar el usuario: {ex.Message}"
+                    };
+                }
+            }
+            else
+            {
+                return new BaseResponse
+                {
+                    Result = false,
+                    Message = "El usuario no existe."
+                };
+            }
+        }
+
 
     }
 }

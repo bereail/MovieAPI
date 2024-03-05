@@ -164,8 +164,8 @@ namespace movie_api.Migrations
                     b.Property<int?>("IdAdminNavigationId")
                         .HasColumnType("int");
 
-                    b.Property<int>("State")
-                        .HasColumnType("int");
+                    b.Property<int?>("State")
+                        .HasColumnType("state");
 
                     b.Property<string>("Title")
                         .HasMaxLength(255)
@@ -192,6 +192,11 @@ namespace movie_api.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("email");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("IsActive");
+                       
 
                     b.Property<string>("Lastname")
                         .HasMaxLength(255)

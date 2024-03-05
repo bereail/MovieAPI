@@ -37,7 +37,8 @@ namespace MOVIE_API.Services.Implementations
                         Lastname = adminDto.Lastname,
                         Email = adminDto.Email,
                         Pass = adminDto.Pass,
-                        Rol = "Admin"  // Asignar el rol de administrador (o el valor correspondiente)
+                        Rol = "Admin",  // Asignar el rol de administrador (o el valor correspondiente)
+                        IsActive = adminDto.IsActive,
                     };
 
                     // Crear un nuevo objeto de tipo Admin y asignarle los valores del DTO
