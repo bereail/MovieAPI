@@ -7,7 +7,7 @@ namespace movie_api.Services.Interfaces
 
 
 
-        //Funcion para comprobar si el usuario autenticado coincide con el id ingresado o si es admin
+        //Funciòn para comprobar si el usuario autenticado coincide con el id ingresado o si es admin
         public bool CompareUserIdWithLoggedInUser(int id, ClaimsPrincipal user);
     }
 }

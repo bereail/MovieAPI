@@ -116,14 +116,13 @@ namespace movie_api.Controllers
 
         //Trae todo el historial de rservas de un usuario
         // Endpoint para obtener el historial de reservas de un usuario
-        // Endpoint para obtener el historial de reservas de un usuario
         [HttpGet("history/{userId}")]
         [Authorize(Roles = "Admin,Client")] // Permite tanto a Admin como a Client acceder a este endpoint
         public IActionResult GetBookingHistory(int userId)
         {
             try
             {
-                // Obtén el usuario autenticado
+                // Obtengo el usuario autenticado
                 var user = HttpContext.User;
 
                 // Llama al servicio para obtener el historial de reservas
@@ -143,22 +142,7 @@ namespace movie_api.Controllers
             }
         } 
 
-        //----------------------------------------------------------------------------------------------------------------------------------------
-        //Eliminar usuario
-
-        [HttpPut("{id}/deactivate")]
-        public IActionResult DeactivateUser(int id)
-        {
-            var response = _bookingService.DesactivateUser(id, User);
-
-            if (response.Result)
-            {
-                return Ok(response);
-            }
-
-            return BadRequest(response);
-        }
-
+        
     }
 }
 

@@ -7,7 +7,7 @@ namespace MOVIE_API.Services.Interfaces
     public interface IAdminService
     {
 
-        //funcion para crear un admin
+        //Funciòn para crear un admin
         int CreateAdmin(AdminCreateDto adminDto);
 
     }

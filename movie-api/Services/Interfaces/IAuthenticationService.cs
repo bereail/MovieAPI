@@ -5,6 +5,7 @@ namespace movie_api.Services.Interfaces
 {
     public interface IAuthenticationService
     {
+        //Validar usuario
         User? ValidateUser(AuthenticationRequestBody authenticationRequestBody);
     }
 }

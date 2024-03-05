@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using movie_api.Models.DTO;
 using MOVIE_API.Models;
 using movie_api.Model.Dto;
+using movie_api.Services.Implementations;
 
 namespace MOVIE_API.Controllers
 {
@@ -16,11 +17,13 @@ namespace MOVIE_API.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IBookingService _bookingService;
 
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, IBookingService bookingService)
         {
             _userService = userService;
+            _bookingService = bookingService;
         }
 
 
@@ -178,6 +181,25 @@ namespace MOVIE_API.Controllers
             {
                 return BadRequest(new { message = result.Message });
             }
+        }
+
+
+
+
+        //----------------------------------------------------------------------------------------------------------------------------------------
+        //Eliminar usuario
+
+        [HttpDelete("{id}/deactivateUser")]
+        public IActionResult DeactivateUser(int id)
+        {
+            var response = _bookingService.DesactivateUser(id, User);
+
+            if (response.Result)
+            {
+                return Ok(response);
+            }
+
+            return BadRequest(response);
         }
 
 

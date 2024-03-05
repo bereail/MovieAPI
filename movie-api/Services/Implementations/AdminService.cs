@@ -20,7 +20,7 @@ namespace MOVIE_API.Services.Implementations
 
         /*-------------------------------------------------------------------------------------------------------------*/
 
-        //crear Admin y lo asocia a un nuevo booking id
+        //Crear Admin y lo asocia a un nuevo booking id
         public int CreateAdmin(AdminCreateDto adminDto)
         {
             try

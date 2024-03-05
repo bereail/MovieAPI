@@ -83,15 +83,5 @@ namespace MOVIE_API.Controllers
 
 
 
-        //Funcion para comprobar si el usuario autenticado coincide con el id ingresado o si es admin
-
-        [HttpGet("getUser/{id}")]
-        public ActionResult<bool> CompareUser(int id)
-        {
-            var result = _userComparisonService.CompareUserIdWithLoggedInUser(id, User);
-
-            return Ok(result);
-        }
-
     }
 }

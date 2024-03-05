@@ -18,7 +18,6 @@ Minuta de Reunión - Desarrollo de API
  Hay dos roles :
 				usuario => admin 
 						El administrador puede:
-							//aca agregar que el admin tienee todas las funcionalidades del cliente +
 							- Crear otros admins y clientes.
 							- Buscar pelicula por su id
 							- Ver todas las peliculas en todos sus estados

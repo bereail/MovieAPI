@@ -28,10 +28,6 @@ namespace movie_api.Services.Interfaces
         BookingResult UpdateBookingState(int bookingId, BookingState newState);
 
 
-
-
-
-
         //Crea una nueva bookina asocidado a un userid en state available y con fecha de retorno en 3 dias
         public BookingResult AddNewBooking(int userId);
 
@@ -51,6 +47,7 @@ namespace movie_api.Services.Interfaces
 
 
         //Desactivar un usuario 
+        //Un usuario no puede ser desactivado si tiene reservas pendientes
         BaseResponse DesactivateUser(int idUser, ClaimsPrincipal user);
 
         //Verifica si el usario tiene reservas o no antes de ser desactivado
