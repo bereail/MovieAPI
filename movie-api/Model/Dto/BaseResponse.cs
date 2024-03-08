@@ -5,5 +5,7 @@
         public bool Result { get; set; }
         public string Message { get; set; }
         public bool IsSuccess { get; internal set; }
+
+        public string Details { get; internal set; }
     }
 }

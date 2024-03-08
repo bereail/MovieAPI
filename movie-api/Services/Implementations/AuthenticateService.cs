@@ -14,6 +14,10 @@ namespace movie_api.Services.Implementations
         {
             _userService = userService;
         }
+
+
+        //---------------------------------------------------------------------------------------------------------------------------------------
+        //  Verificar si el usuario es nulo o si la cuenta está deshabilitada
         public User? ValidateUser(AuthenticationRequestBody authenticationRequestBody)
         {
             if (string.IsNullOrEmpty(authenticationRequestBody.Email) || string.IsNullOrEmpty(authenticationRequestBody.Password))

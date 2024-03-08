@@ -73,3 +73,6 @@ Los clientes pueden ver su historial de reservas.
 
 •Reservas Pendientes:
 Los usuarios pueden verificar si tienen reservas pendientes.
+
+•Desactivar cuenta:
+Los usuarios pueden desactivar su propia cuenta siempre y cuando no tengan reesevas pendientes. 

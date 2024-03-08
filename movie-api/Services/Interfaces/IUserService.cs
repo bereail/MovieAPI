@@ -37,13 +37,11 @@ namespace movie_api.Services.Interfaces
         //Traer todos los clientes -> Admin
         public IEnumerable<ClientDto> GetClients();
 
-        //Editar los datos de un usuario -> Admin
-        public BaseResponse UpdateUser(UserUpdateDto updatedUser);
 
+        //Descativar un user -> Admin o mismo user
+        public void DisableAccount(int userId);
 
-
-
-        //Reactivar un usuario
+        //Reactivar un usuario  -> Admin o mismo user
         BaseResponse ReactivateUser(int idUser, ClaimsPrincipal user);
 
     }

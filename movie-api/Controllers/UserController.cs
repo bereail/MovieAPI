@@ -46,7 +46,7 @@ namespace MOVIE_API.Controllers
                     return NotFound($"No se encontró ningún usuario con ID {id}");
                 }
 
-                // Devuelve el usuario encontrado 
+                // Devuelve el user encontrado 
                 return Ok(user);
             }
             catch (Exception ex)
@@ -140,33 +140,9 @@ namespace MOVIE_API.Controllers
 
 
 
-        //----------------------------------------------------------------------------------------------------------------------------------------
-        //Editar los datos de un usuario
-        [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
-        public IActionResult UpdateUser(int id, [FromBody] UserUpdateDto updatedUser)
-        {
-            if (updatedUser == null || id != updatedUser.Id || !ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var result = _userService.UpdateUser(updatedUser);
-
-            if (result.Result)
-            {
-                return Ok(result);
-            }
-            else
-            {
-                return NotFound(result);
-            }
-        }
-
-
 
         //--------------------------------------------------------------------------------------------------------------------------------------
-        //Reactiar un usuario eliminado
+        //Reactiar un usuario eliminado -> Admin o mismo user
 
         [HttpPatch("{id}/reactivate")]
         public IActionResult ReactivateUser(int id)
@@ -184,26 +160,8 @@ namespace MOVIE_API.Controllers
         }
 
 
-
-
-        //----------------------------------------------------------------------------------------------------------------------------------------
-        //Eliminar usuario
-
-        [HttpDelete("{id}/deactivateUser")]
-        public IActionResult DeactivateUser(int id)
-        {
-            var response = _bookingService.DesactivateUser(id, User);
-
-            if (response.Result)
-            {
-                return Ok(response);
-            }
-
-            return BadRequest(response);
-        }
-
-
     }
 }
+
 
 

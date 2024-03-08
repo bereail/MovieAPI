@@ -18,6 +18,9 @@ namespace movie_api.Model.Dto
 
         public string Pass { get; set; }
 
+        [JsonIgnore]
+        public bool IsActive { get; set; }
+
         public string Rol { get; set; }
 
     }

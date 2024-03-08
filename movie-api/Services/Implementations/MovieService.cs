@@ -183,7 +183,7 @@ namespace movie_api.Services.Implementations
 
 
         //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        //Ingresando en id de moovie, moodifica su state a disponible
+        //Ingresando en id de movie, moodifica su state a disponible
         public void SetMovieStateToAvailable(int idMovie)
         {
             // Buscar la película por su ID
@@ -210,7 +210,8 @@ namespace movie_api.Services.Implementations
             }
         }
 
-
+        //----------------------------------------------------------------------------------------------------------------------------------------------
+        //Trae las peliculas sus estados
         public (Movie?, MovieState) GetMovieAndStateById(int movieId)
         {
             var movie = _moviedbContext.Movies.SingleOrDefault(u => u.Id == movieId);

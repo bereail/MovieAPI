@@ -11,7 +11,5 @@ namespace movie_api.Model.Dto
 
         public DateTime? Date { get; set; }
 
-
-
     }
 }

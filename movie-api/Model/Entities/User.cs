@@ -40,8 +40,8 @@ public partial class User
     public string Rol { get; set; }
 
     [Column("IsActive")]
-
     public bool IsActive {get; set; }
+
     public virtual ICollection<Admin> Admins { get; set; } = new List<Admin>();
 
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();

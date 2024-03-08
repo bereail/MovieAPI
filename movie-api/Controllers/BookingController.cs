@@ -36,17 +36,17 @@ namespace movie_api.Controllers
 
             if (result.Success)
             {
-                return Ok(result); // 200 OK
+                return Ok(result); 
             }
-
-            return BadRequest(result); // 400 Bad Request si hay un problema
+            //Error
+            return BadRequest(result); 
         }
 
 
 
         //--------------------------------------------------------------------------------------------------------
 
-        //CREAR RESERVA -> Admin
+        //CREAR RESERVA -> Admin o user autenticado
         [HttpPost("create-booking-detail/{userId}")]
         [Authorize(Roles = "Admin,Client")]
         public IActionResult CreateBookingDetail(int userId, [FromBody] BookingDetailPostDto bookingDetailPostDto)
@@ -68,7 +68,7 @@ namespace movie_api.Controllers
 
         //---------------------------------------------------------------------------------
         //Modifica el estado de una booking 
-        //Ingresando IdBoookoing y nuevo estado
+        //Ingresando IdBoookoing y nuevo estado -> Admin
 
         [HttpPost("updateBookingState/{bookingId}")]
         [Authorize(Roles = "Admin")]
@@ -86,7 +86,7 @@ namespace movie_api.Controllers
 
 
         //---------------------------------------------------------------------------------------------------------
-        // Trae todas las bookingDetail asociadas a una booking
+        // Trae todas las bookingDetail asociadas a una booking -> Admin
         [HttpGet("bookingDetails/{bookingId}")]
         [Authorize(Roles = "Admin")]
         public IActionResult GetBookingDetailsByBookingId(int bookingId)
@@ -140,9 +140,31 @@ namespace movie_api.Controllers
             {
                 return StatusCode(500, $"Error al obtener historial de reservas: {ex.Message}");
             }
-        } 
+        }
 
-        
+
+        //---------------------------------------------------------------------------------------------------------
+        // Desactivar un user, siempre y cuando no tenga reservaspendientes
+        [HttpDelete("{idUser}/deactivate")]
+        [Authorize(Roles = "Admin, Client")] 
+        public IActionResult DeactivateUser(int idUser)
+        {
+            var currentUser = HttpContext.User; 
+
+            var result = _bookingService.DesactivateUser(idUser, currentUser);
+
+            if (result.Result)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(result);
+            }
+        }
+
+
+
     }
 }
 

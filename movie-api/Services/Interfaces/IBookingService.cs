@@ -50,6 +50,7 @@ namespace movie_api.Services.Interfaces
         //Un usuario no puede ser desactivado si tiene reservas pendientes
         BaseResponse DesactivateUser(int idUser, ClaimsPrincipal user);
 
+
         //Verifica si el usario tiene reservas o no antes de ser desactivado
         bool HasPendingBookings(int userId);
     }

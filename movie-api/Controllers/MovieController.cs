@@ -40,78 +40,51 @@ namespace movie_api.Controllers
 
 
 
-        //----------------------------------------------------------------------------------------------------
-        //Trae todas las peliculas y las ordenas segun su state
-        //Solo el admin puede ver todas las peliculas
-        //El user solo puede ver las pelicula disponibles
-       /* [HttpGet("grouped-by-state")]
-        public IActionResult GetMoviesGroupedByState()
-        {
-            try
-            {
-                // Obtener el rol del usuario desde los claims
-                string userRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+//----------------------------------------------------------------------------------------------------
+//Trae todas las peliculas y las ordenas segun su state
+//Solo el admin puede ver todas las peliculas
+//El user solo puede ver las pelicula disponibles
+ [HttpGet("grouped-by-state")]
+ public IActionResult GetMoviesGroupedByState()
+ {
+     try
+     {
+         // Obtener el rol del usuario desde los claims
+         string userRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
 
-                IEnumerable<MovieDto> groupedMovies;
+         IEnumerable<MovieDto> groupedMovies;
 
-                if (userRole == "Admin")
-                {
-                    // Usuario con rol "admin", obtiene todas las películas
-                    var moviesGroupedByState = _movieService.GetMoviesGroupedByState();
-                    groupedMovies = moviesGroupedByState
-                        .SelectMany(entry => entry.Value.Select(movieDto => movieDto))
-                        .OrderBy(movieDto => movieDto.State).ToList(); // Ordenar por estado de forma descendente
-                }
-                else if (userRole == "Client")
-                {
-                    // Usuario con rol "cliente", obtiene solo las películas con estado "available"
-                    var moviesGroupedByState = _movieService.GetMoviesGroupedByState();
-                    groupedMovies = moviesGroupedByState
-                        .Where(entry => entry.Key == MovieState.Available)
-                        .SelectMany(entry => entry.Value.Select(movieDto => movieDto))
-                         .OrderBy(movieDto => movieDto.State).ToList(); // Ordenar por estado de forma descendente
-                }
-                else
-                {
-                    //error
-                    return StatusCode(403, "Acceso no autorizado");
-                }
+         if (userRole == "Admin")
+         {
+             // Usuario con rol "admin", obtiene todas las películas
+             var moviesGroupedByState = _movieService.GetMoviesGroupedByState();
+             groupedMovies = moviesGroupedByState
+                 .SelectMany(entry => entry.Value.Select(movieDto => movieDto))
+                 .OrderBy(movieDto => movieDto.State).ToList(); // Ordenar por estado de forma descendente
+         }
+         else if (userRole == "Client")
+         {
+             // Usuario con rol "cliente", obtiene solo las películas con estado "available"
+             var moviesGroupedByState = _movieService.GetMoviesGroupedByState();
+             groupedMovies = moviesGroupedByState
+                 .Where(entry => entry.Key == MovieState.Available)
+                 .SelectMany(entry => entry.Value.Select(movieDto => movieDto))
+                  .OrderBy(movieDto => movieDto.State).ToList(); // Ordenar por estado de forma descendente
+         }
+         else
+         {
+             //error
+             return StatusCode(403, "Acceso no autorizado");
+         }
 
-                return Ok(groupedMovies);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al obtener películas agrupadas por estado: {ex.Message}");
-                return StatusCode(500, "Error interno del servidor");
-            }
-        }*/
-
-
-        //prueba para el get d reat
-        [HttpGet("movies")]
-        public IActionResult GetMoviesGroupedByState()
-        {
-            try
-            {
-                // Obtener todas las películas agrupadas por estado
-                var moviesGroupedByState = _movieService.GetMoviesGroupedByState();
-
-                // Aquí puedes seguir con la lógica según tus necesidades sin necesidad de verificar roles.
-
-                IEnumerable<MovieDto> groupedMovies = moviesGroupedByState
-                    .SelectMany(entry => entry.Value)
-                    .OrderBy(movieDto => movieDto.State)
-                    .ToList();
-
-                return Ok(groupedMovies);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al obtener películas agrupadas por estado: {ex.Message}");
-                return StatusCode(500, "Error interno del servidor");
-            }
-        }
-
+         return Ok(groupedMovies);
+     }
+     catch (Exception ex)
+     {
+         Console.WriteLine($"Error al obtener películas agrupadas por estado: {ex.Message}");
+         return StatusCode(500, "Error interno del servidor");
+     }
+ }
 
 
         //----------------------------------------------------------------------------------------------------
@@ -201,4 +174,6 @@ namespace movie_api.Controllers
 
     }
 }
+
+
 

@@ -33,27 +33,6 @@ namespace movie_api.Services.Implementations
         }
 
 
-
-
-        public void DisableAccount(int userId)
-        {
-            // Obtener el usuario de la base de datos usando GetUserById
-            var user = GetUserById(userId);
-
-            // Verificar si el usuario existe y no está deshabilitado
-            if (user != null && user.IsActive)
-            {
-                // Deshabilitar la cuenta
-                user.IsActive = false;
-
-                // Guardar los cambios en la base de datos
-                _movieDbContext.SaveChanges();
-            }
-
-        }
-
-
-
             public BaseResponse Login(string email, string password)
         {
             BaseResponse response = new BaseResponse();
@@ -216,66 +195,35 @@ namespace movie_api.Services.Implementations
                 Email = user.Email
             };
         }
-
-
+            
 
 
 
         //----------------------------------------------------------------------------------------------------------------------------------------
-        //editar los datos de un usuario -> Admin
-        public BaseResponse UpdateUser(UserUpdateDto updatedUser)
+        //Descativar un user -> Admin o mismo user
+        //se consume en el service Booking
+        public void DisableAccount(int userId)
         {
-            try
+            // Obtener el usuario de la base de datos usando GetUserById
+            var user = GetUserById(userId);
+
+            // Verificar si el usuario existe y no está deshabilitado
+            if (user != null && user.IsActive)
             {
-                // Verificar si el usuario existe
-                var existingUser = _movieDbContext.Users.SingleOrDefault(u => u.Id == updatedUser.Id);
+                // Deshabilitar la cuenta
+                user.IsActive = false;
 
-                if (existingUser != null)
-                {
-                    // Actualizar los campos modificados
-                    existingUser.Name = updatedUser.Name;
-                    existingUser.Lastname = updatedUser.Lastname;
-                    existingUser.Email = updatedUser.Email;
-                    existingUser.Pass = updatedUser.Pass;
-                    existingUser.Rol = updatedUser.Rol;
-
-                    _movieDbContext.SaveChanges();
-
-                    return new BaseResponse
-                    {
-                        Result = true,
-                        Message = "Usuario actualizado con éxito."
-                    };
-                }
-                else
-                {
-                    // Enviar un mensaje indicando que el usuario no existe
-                    return new BaseResponse
-                    {
-                        Result = false,
-                        Message = "El usuario no existe."
-                    };
-                }
+                // Guardar los cambios en la base de datos
+                _movieDbContext.SaveChanges();
             }
-            catch (Exception ex)
-            {
-                // Error
-                return new BaseResponse
-                {
-                    Result = false,
-                    Message = $"Error al actualizar el usuario: {ex.Message}"
-                };
-            }
+
         }
 
 
 
 
-
-
-
         //--------------------------------------------------------------------------------------------------------------------------------------
-        //Reactiar un usuario desactivado
+        //Reactiar un usuario desactivado -> Admin o mismo user
         public BaseResponse ReactivateUser(int idUser, ClaimsPrincipal user)
         {
             var existingUser = GetUserById(idUser);
@@ -327,3 +275,4 @@ namespace movie_api.Services.Implementations
 
     }
 }
+

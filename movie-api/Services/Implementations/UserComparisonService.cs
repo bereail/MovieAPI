@@ -13,18 +13,22 @@ namespace movie_api.Services.Implementations
             _moviedbContext = moviedbContext;
         }
 
-
+        //-------------------------------------------------------------------------------------------------------------------------
         //Funcion para comprobar si el usuario autenticado coincide con el id ingresado o si es admin
         public bool CompareUserIdWithLoggedInUser(int id, ClaimsPrincipal user)
         {
+
+            //Obtener el id del user autenticado
             var userIdClaim = user.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
 
+
+            // Verificar si el ID existe y puede ser parseado como un entero
             if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int loggedInUserId))
             {
-                // Obtener los roles del usuario logeado
+                // Obtener los roles del  user logeado
                 var loggedInUserRoles = user.FindAll("http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Select(r => r.Value);
 
-                // Verificar si el usuario es un administrador
+                // Verificar si es un admin
                 bool isAdmin = loggedInUserRoles.Contains("Admin");
 
                 // Dentro de CompareUserIdWithLoggedInUser

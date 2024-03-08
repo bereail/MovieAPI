@@ -214,6 +214,16 @@ namespace movie_api.Services.Implementations
             {
                 // Verificar si el usuario autenticado es un admin
                 bool isAdmin = user.IsInRole("Admin");
+
+                // Obtener información del usuario
+                var existingUser = _userService.GetUserById(userId);
+
+                // Verificar si el usuario está activo
+                if (existingUser == null || !existingUser.IsActive)
+                {
+                    return new CreateBooking { Success = false, Message = "El usuario no está activo y no puede realizar esta acción." };
+                }
+
                 // Comparar el ID del usuario autenticado con el ID de usuario proporcionado o verificar si es un admin
                 if (!_userComparisonService.CompareUserIdWithLoggedInUser(userId, user) && !isAdmin)
                 {
@@ -406,7 +416,7 @@ namespace movie_api.Services.Implementations
 
         //-------------------------------------------------------------------------------------------------
         //Trae todo el historial de rservas de un usuario
-
+        //El admin puede traer todos, cada user puede ver su propìo historial
         public List<BookingHistoryDto> GetHistory(int userId, ClaimsPrincipal user)
         {
             List<int> bookingIds;
@@ -579,7 +589,7 @@ namespace movie_api.Services.Implementations
             catch (Exception ex)
             {
                 Console.WriteLine($"Error: {ex.Message}");
-                // Manejar la excepción según tus necesidades
+                //Error
                 return new BookingResult
                 {
                     Success = false,
@@ -733,28 +743,21 @@ namespace movie_api.Services.Implementations
         }
 
 
-
-
-        //Verifica si el usario tiene reservas o no antes de ser desactivado
-
+        //-----------------------------------------------------------------------------------------------------------------------
+        // Verifica si el usuario tiene reservas pendientes o no antes de ser desactivado
         public bool HasPendingBookings(int userId)
         {
             try
             {
-                // Obtengo la ùltima reserva asociada al userId
+                // Obtengo la última reserva asociada al userId
                 var lastBookingId = GetLastBookingIdByUserId(userId);
 
-                // Si se encuentra una reserva
-                if (lastBookingId > 0)
-                {
-                    // Obtenengo el estado de la última reserva
-                    var bookingState = GetBookingState(lastBookingId);
+                // Obtengo todas las BookingDetails asociadas a la última reserva
+                var bookingDetails = GetBookingDetailsByBookingId(lastBookingId);
 
-                    // Verifica si el estado es "Pending"
-                    if (bookingState == BookingState.Pending)
-                    {
-                        return true; // El usuario tiene reservas pendientes
-                    }
+                if (bookingDetails.Any(detail => detail.State == BookingDetailState.Pending))
+                {
+                    return true; // El usuario tiene al menos una reserva pendiente
                 }
 
                 return false; // El usuario no tiene reservas pendientes o no se encontró una reserva
