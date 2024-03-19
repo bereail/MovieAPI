@@ -34,23 +34,21 @@ namespace movie_api.Services.Implementations
         }
 
         //-------------------------------------------------------------------------------------------------------------------------
-        //Funcion para retornar una reserva  -> Admin
-        //Ingresando un Id de User modifica el estado de la booking y las bookingDetail a returned
         public BookingResult ReturnBooking(int userId)
         {
             try
             {
-                // Obtener la última BookingId asociada al usuario
+
                 int lastBookingId = GetLastBookingIdByUserId(userId);
                 Console.WriteLine($"Last Booking ID: {lastBookingId}");
 
-                // Verificar si la reserva existe
+
                 if (lastBookingId > 0)
                 {
-                    // Obtener el estado de la última reserva
+
                     var bookingState = GetBookingState(lastBookingId);
 
-                    // Verificar si el estado es "Returned"
+
                     if (bookingState == BookingState.Returned)
                     {
                         return new BookingResult
@@ -60,25 +58,22 @@ namespace movie_api.Services.Implementations
                         };
                     }
 
-                    // Obtener todas las BookingDetails asociadas a la última reserva
+
                     var bookingDetails = GetBookingDetailsByBookingId(lastBookingId);
 
-                    // Modificar el estado de todas las BookingDetails a "Returned"
+
                     foreach (var bookingDetail in bookingDetails)
                     {
                         bookingDetail.State = BookingDetailState.Returned;
                     }
 
-                    // Guardar los cambios en la base de datos
+
                     _movieDbContext.SaveChanges();
 
 
-
-                    // Verificar si todas las BookingDetails están en estado "Returned"
                     if (bookingDetails.All(bd => bd.State == BookingDetailState.Returned))
                     {
 
-                        // Modificar el estado de la reserva a "Returned"
                         var lastBooking = _movieDbContext.Bookings.Find(lastBookingId);
 
                         if (lastBooking != null)
@@ -86,12 +81,10 @@ namespace movie_api.Services.Implementations
                             lastBooking.State = (int)BookingState.Returned;
                             _movieDbContext.SaveChanges();
 
-                            // Actualizar el estado de las películas asociadas a "Available"
                             foreach (var bookingDetail in bookingDetails)
                             {
                                 _movieService.SetMovieStateToAvailable(bookingDetail.IdMovie);
 
-                                // Obtener el estado actualizado de la película
                                 var updatedMovieState = _movieService.GetMovieAndStateById(bookingDetail.IdMovie).Item2;
 
                                 Console.WriteLine($"Movie ID: {bookingDetail.IdMovie}, Updated State: {updatedMovieState}");
@@ -145,14 +138,10 @@ namespace movie_api.Services.Implementations
 
 
         //----------------------------------------------------------------------------------------------------------------------------------------
-        //ingresando un id de user, trae la ultima bookingId asocidados(trae solo el id de booking) 
-        //ReturnBooking(int userId)
-
         public int GetLastBookingIdByUserId(int userId)
         {
             try
             {
-                // Obtener la última reserva asociada al userId 
                 var lastBookingId = _movieDbContext.Bookings
                     .Where(b => b.IdUser == userId)
                     .OrderByDescending(b => b.Id)
@@ -171,24 +160,18 @@ namespace movie_api.Services.Implementations
 
 
         //----------------------------------------------------------------------------------------------------------------------------------------
-        //Ingresnado un idBooking, retorna su state -> Admin
-        //ReturnBooking(int userId)
         public BookingState GetBookingState(int bookingId)
         {
             try
             {
-                // Buscar la reserva por su Id
                 var booking = _movieDbContext.Bookings.Find(bookingId);
 
-                // Verificar si la reserva existe
                 if (booking != null)
                 {
-                    // Devolver el estado de la reserva
                     return (BookingState)booking.State;
                 }
                 else
                 {
-                    // La reserva no existe
                     Console.WriteLine($"La reserva con Id {bookingId} no existe.");
                     return BookingState.Error;
                 }
@@ -207,74 +190,57 @@ namespace movie_api.Services.Implementations
 
 
         //-----------------------------------------------------------------------------------------------------------------------------
-        // Crea un nueva booking detail ingresando el id de un usuario, un booking no puede tener más de dos details -> CHECK
         public CreateBooking CreateBookingDetail(int userId, ClaimsPrincipal user, BookingDetailPostDto bookingDetailPostDto)
         {
             try
             {
-                // Verificar si el usuario autenticado es un admin
                 bool isAdmin = user.IsInRole("Admin");
 
-                // Obtener información del usuario
                 var existingUser = _userService.GetUserById(userId);
-
-                // Verificar si el usuario está activo
                 if (existingUser == null || !existingUser.IsActive)
                 {
                     return new CreateBooking { Success = false, Message = "El usuario no está activo y no puede realizar esta acción." };
                 }
 
-                // Comparar el ID del usuario autenticado con el ID de usuario proporcionado o verificar si es un admin
                 if (!_userComparisonService.CompareUserIdWithLoggedInUser(userId, user) && !isAdmin)
                 {
                     return new CreateBooking { Success = false, Message = "No tienes permisos para realizar esta acción." };
                 }
 
 
-                // Obtener el último estado de la reserva asociada al usuario
                 var lastBookingState = GetStateLastBooking(userId);
 
-
-                // Si el estado de la última reserva es "returned", agrega una nueva booking
                 if (lastBookingState.Success && (lastBookingState.Message == "Reserva retornada, crear nueva reserva." || lastBookingState.Message == "El estado de la última reserva es 'returned'."))
                 {
                     Console.WriteLine("Agregando nueva reserva...");
                     AddNewBooking(userId);
                 }
 
-                // Obtener la película por título
                 var movieTitle = bookingDetailPostDto.MovieTitle;
                 var existingMovie = _movieDbContext.Movies.SingleOrDefault(u => u.Title.ToLower() == movieTitle.ToLower());
 
-                // Si la película ingresada no existe en la base de datos
                 if (existingMovie == null)
                 {
                     return new CreateBooking { Success = false, Message = $"La película con el título '{movieTitle}' no existe en la base de datos." };
                 }
 
-                // Verificar si la película está disponible para alquilar
                 if (existingMovie.State != MovieState.Available)
                 {
                     return new CreateBooking { Success = false, Message = $"La película '{existingMovie.Title}' no está disponible para alquilar en este momento." };
                 }
 
-                // Obtener la lista de BookingIds asociados al usuario
                 var bookingIds = _userService.GetBookingIdsByUserId(userId);
 
                 if (bookingIds.Count > 0)
                 {
-                    // Seleccionar el último BookingId de la lista
                     int lastBookingId = bookingIds.Last();
 
-                    // Verificar el estado de la última reserva
                     var bookingState = CheckBookingDetailState(lastBookingId);
 
-                    // Verificar la cantidad actual de BookingDetails
                     var currentBookingDetailsCount = _movieDbContext.BookingDetails.Count(bd => bd.IdBooking == lastBookingId);
 
                     if (bookingState.Success && currentBookingDetailsCount + 1 <= 2)
                     {
-                        // Crear los BookingDetail con el state pending por defecto
                         var bookingDetailEntity = new BookingDetail
                         {
                             IdMovie = existingMovie.Id,
@@ -290,28 +256,23 @@ namespace movie_api.Services.Implementations
                         _movieDbContext.BookingDetails.Add(bookingDetailEntity);
                         _movieDbContext.SaveChanges();
 
-                        // Modificar el estado de la película a Reserved
                         existingMovie.State = MovieState.Reserved;
                         _movieDbContext.SaveChanges();
 
-                        // Se creó correctamente
                         return new CreateBooking { Success = true, Message = "BookingDetail creado con éxito." };
                     }
                     else
                     {
-                        // Si supera los dos BookingDetail
                         return new CreateBooking { Success = false, Message = "No se pueden agregar más de 2 BookingDetails." };
                     }
                 }
                 else
                 {
-                    // Error
                     return new CreateBooking { Success = false, Message = "No hay BookingIds asociados al usuario." };
                 }
             }
             catch (Exception ex)
             {
-                // Error
                 return new CreateBooking { Success = false, Message = $"Error al crear la BookingDetail: {ex.Message}" };
             }
         }
@@ -322,8 +283,7 @@ namespace movie_api.Services.Implementations
 
 
         //---------------------------------------------------------------------------------
-        //Modifica el estado de una booking 
-        //Ingresando IdBoookoing y nuevo estado
+
         public BookingResult UpdateBookingState(int bookingId, BookingState newState)
         {
             try
@@ -332,7 +292,6 @@ namespace movie_api.Services.Implementations
 
                 if (booking != null)
                 {
-                    // Verificar si el nuevo estado es válido
                     if (Enum.IsDefined(typeof(BookingState), newState))
                     {
                         booking.State = (int)newState;
@@ -373,7 +332,6 @@ namespace movie_api.Services.Implementations
         }
 
         //----------------------------------------------------------------------------------------------------------------------------
-        //Crea una nueva bookina asocidado a un userid en state available y con fecha de retorno en 3 dias
         public BookingResult AddNewBooking(int userId)
         {
             try
@@ -415,24 +373,21 @@ namespace movie_api.Services.Implementations
 
 
         //-------------------------------------------------------------------------------------------------
-        //Trae todo el historial de rservas de un usuario
-        //El admin puede traer todos, cada user puede ver su propìo historial
+
         public List<BookingHistoryDto> GetHistory(int userId, ClaimsPrincipal user)
         {
             List<int> bookingIds;
 
-            // Verificar si el usuario autenticado es un administrador
             bool isAdmin = user.IsInRole("Admin");
 
-            // Comparar el ID del usuario autenticado con el ID de usuario proporcionado o verificar si es un administrador
+
             if (_userComparisonService.CompareUserIdWithLoggedInUser(userId, user) || isAdmin)
             {
-                // Obtener las BookingIds asociadas al usuario
+
                 bookingIds = _userService.GetBookingIdsByUserId(userId);
             }
             else
             {
-                // Usuario no autorizado para ver el historial
                 return new List<BookingHistoryDto>();
             }
 
@@ -466,13 +421,12 @@ namespace movie_api.Services.Implementations
 
 
         //---------------------------------------------------------------------------------------------------------
-        // Trae todas las bookingDetail asociadas a una booking
-        //CheckBookingdetail(int bookingId)
+
         public List<BookingDetail> GetBookingDetailsByBookingId(int bookingId)
         {
             try
             {
-                // Ejecuta la consulta SQL para obtener las BookingDetail
+
                 var bookingDetails = _movieDbContext.BookingDetails
                     .FromSqlRaw("SELECT * FROM BookingDetails WHERE idBooking = {0}", bookingId)
                     .ToList();
@@ -489,18 +443,15 @@ namespace movie_api.Services.Implementations
 
 
         //---------------------------------------------------------------------------------------------------------
-        //Ingresando un idBooking chequea sus el state de sus detalles
-        // CreateBookingDetail
+
         public BookingResult CheckBookingDetailState(int bookingId)
         {
             try
             {
 
-                // Obtener todas las BookingDetail asociadas a la reserva
                 var bookingDetails = GetBookingDetailsByBookingId(bookingId);
 
 
-                //verifica si la reserva no tiene detalles aosciados
                 if (bookingDetails.Count == 0)
                 {
                     return new BookingResult
@@ -510,7 +461,7 @@ namespace movie_api.Services.Implementations
                         NumberState = 0
                     };
                 }
-                //verigifica que la reserva no tenga mas de dos detalles (1) -
+
                 if (bookingDetails.Count >= 2)
                 {
                     return new BookingResult
@@ -520,11 +471,10 @@ namespace movie_api.Services.Implementations
                         NumberState = 1
                     };
                 }
-                // Verifica el estado de cada BookingDetail
+
                 var pendingBookingDetailsCount = bookingDetails.Count(bd => bd.State == BookingDetailState.Pending);
                 var returnedBookingDetailsCount = bookingDetails.Count(bd => bd.State == BookingDetailState.Returned);
 
-                //verifica si tiene dos reservas pendientes  (2) Pending
                 if (pendingBookingDetailsCount == 2)
                 {
 
@@ -536,11 +486,9 @@ namespace movie_api.Services.Implementations
                     };
                 }
 
-                // en el caos que solo tenga una pendiente si podra generar una nueva reserva (3)
                 else if (pendingBookingDetailsCount == 1)
                 {
 
-                    //moodificar el estado a last pending
                     return new BookingResult
                     {
                         Success = true,
@@ -549,7 +497,6 @@ namespace movie_api.Services.Implementations
                     };
                 }
 
-                //en el caos que tenga dos resevras retornadas (4)
                 else if (returnedBookingDetailsCount == 2)
                 {
 
@@ -561,7 +508,6 @@ namespace movie_api.Services.Implementations
                     };
 
                 }
-                //en el caso que tenga una solo retoronada puede agregar un nuevo detalle dentro de esa booking (5)
                 else if (returnedBookingDetailsCount == 1)
                 {
 
@@ -574,7 +520,6 @@ namespace movie_api.Services.Implementations
                 }
                 else
                 {
-                    //estado de la reserva descocnocido (6)
                     Console.WriteLine($"Estado de reserva no reconocido: , Valor real de bookingDetails.State: {bookingDetails}");
 
 
@@ -589,7 +534,6 @@ namespace movie_api.Services.Implementations
             catch (Exception ex)
             {
                 Console.WriteLine($"Error: {ex.Message}");
-                //Error
                 return new BookingResult
                 {
                     Success = false,
@@ -602,29 +546,23 @@ namespace movie_api.Services.Implementations
 
 
         //-----------------------------------------------------------------------------------------------------------------------------
-        //Utiliza dos funciones, inrgesando id de user, busca su utlima booking, y retorna el state para saber si es returned o available
-        //si el state de la ultima reserva es available -> devolver true
-        //si el el ultimo state de la reserva es returned -> crear un nueva booking
-        //si el ultimo state es pending -> el usurio tiene reservas pendientes
-        //utiliza la funcion GetLastBookingIdByUserId(userId) y GetBookingState(bookingId)
+
         public BookingResult GetStateLastBooking(int userId)
         {
 
-            //ingresando un id de user, trae la ultima bookingId asocidados
             var lastBooking = GetLastBookingIdByUserId(userId);
 
-            //si no es null
             if (lastBooking > 0)
             {
-                //trae el state de la  ultima booking
+
                 var bookingState = GetBookingState(lastBooking);
 
                 switch (bookingState)
                 {
-                    //si el state de disponible
-                    case BookingState.Available: //1
 
-                        //addbooking (agregar nueva reserva)  retornar el id de reserva
+                    case BookingState.Available: 
+
+
                         return new BookingResult
                         {
                             Success = true,
@@ -633,10 +571,8 @@ namespace movie_api.Services.Implementations
 
                         };
 
-                    //si el state de returned
-                    case BookingState.Returned: //2
+                    case BookingState.Returned: 
 
-                        //addbooking (agregar nueva reserva)  retornar el id de reserva
                         return new BookingResult
                         {
                             Success = true,
@@ -644,9 +580,7 @@ namespace movie_api.Services.Implementations
                             NumberState = 2
                         };
 
-                    //Si el state es pending
-                    //El usuario no puede generar neuva reserva porque tiene reservas pendientes
-                    case BookingState.Pending: //3
+                    case BookingState.Pending: 
 
                         return new BookingResult
                         {
@@ -658,7 +592,6 @@ namespace movie_api.Services.Implementations
                     default:
 
 
-                        //estado desconoocido
                         return new BookingResult
                         {
                             Success = false,
@@ -668,7 +601,7 @@ namespace movie_api.Services.Implementations
             }
             else
             {
-                //error
+
                 return new BookingResult
                 {
                     Success = false,
@@ -681,8 +614,6 @@ namespace movie_api.Services.Implementations
 
 
         //--------------------------------------------------------------------------------------------------------------------------------------
-        // Desactivar un usuario
-        // No puede desactivar un usuario si tiene reservas pendientes
         public BaseResponse DesactivateUser(int idUser, ClaimsPrincipal user)
         {
             var existingUser = _userService.GetUserById(idUser);
@@ -691,7 +622,6 @@ namespace movie_api.Services.Implementations
             {
                 try
                 {
-                    // Verificar si el usuario actual tiene permiso para desactivar la cuenta del usuario 
 
                     if (!_userComparisonService.CompareUserIdWithLoggedInUser(idUser, user))
                     {
@@ -702,7 +632,6 @@ namespace movie_api.Services.Implementations
                         };
                     }
 
-                    // Verificar si el usuario tiene reservas pendientes
                     if (HasPendingBookings(idUser))
                     {
                         return new BaseResponse
@@ -712,7 +641,6 @@ namespace movie_api.Services.Implementations
                         };
                     }
 
-                    // Desactivar la cuenta si es un cliente o admin
                     existingUser.IsActive = false;
 
                     _movieDbContext.SaveChanges();
@@ -744,23 +672,20 @@ namespace movie_api.Services.Implementations
 
 
         //-----------------------------------------------------------------------------------------------------------------------
-        // Verifica si el usuario tiene reservas pendientes o no antes de ser desactivado
         public bool HasPendingBookings(int userId)
         {
             try
             {
-                // Obtengo la última reserva asociada al userId
                 var lastBookingId = GetLastBookingIdByUserId(userId);
 
-                // Obtengo todas las BookingDetails asociadas a la última reserva
                 var bookingDetails = GetBookingDetailsByBookingId(lastBookingId);
 
                 if (bookingDetails.Any(detail => detail.State == BookingDetailState.Pending))
                 {
-                    return true; // El usuario tiene al menos una reserva pendiente
+                    return true;
                 }
 
-                return false; // El usuario no tiene reservas pendientes o no se encontró una reserva
+                return false; 
             }
             catch (Exception ex)
             {

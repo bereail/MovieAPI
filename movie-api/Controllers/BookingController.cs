@@ -26,7 +26,7 @@ namespace movie_api.Controllers
 
 
         //---------------------------------------------------------------------------------------------------------
-        //Retornar una reserva -> Admin
+
 
         [HttpPost("returnBooking/{userId}")]
         [Authorize(Roles = "Admin")]
@@ -46,7 +46,6 @@ namespace movie_api.Controllers
 
         //--------------------------------------------------------------------------------------------------------
 
-        //CREAR RESERVA -> Admin o user autenticado
         [HttpPost("create-booking-detail/{userId}")]
         [Authorize(Roles = "Admin,Client")]
         public IActionResult CreateBookingDetail(int userId, [FromBody] BookingDetailPostDto bookingDetailPostDto)
@@ -67,8 +66,7 @@ namespace movie_api.Controllers
 
 
         //---------------------------------------------------------------------------------
-        //Modifica el estado de una booking 
-        //Ingresando IdBoookoing y nuevo estado -> Admin
+
 
         [HttpPost("updateBookingState/{bookingId}")]
         [Authorize(Roles = "Admin")]
@@ -78,15 +76,15 @@ namespace movie_api.Controllers
 
             if (result.Success)
             {
-                return Ok(result); // 200 OK
+                return Ok(result); 
             }
 
-            return BadRequest(result); // 400 Bad Request si hay un problema
+            return BadRequest(result); 
         }
 
 
         //---------------------------------------------------------------------------------------------------------
-        // Trae todas las bookingDetail asociadas a una booking -> Admin
+
         [HttpGet("bookingDetails/{bookingId}")]
         [Authorize(Roles = "Admin")]
         public IActionResult GetBookingDetailsByBookingId(int bookingId)
@@ -115,20 +113,20 @@ namespace movie_api.Controllers
         //---------------------------------------------------------------------------------------------------------
 
         //Trae todo el historial de rservas de un usuario
-        // Endpoint para obtener el historial de reservas de un usuario
+
         [HttpGet("history/{userId}")]
-        [Authorize(Roles = "Admin,Client")] // Permite tanto a Admin como a Client acceder a este endpoint
+        [Authorize(Roles = "Admin,Client")] 
         public IActionResult GetBookingHistory(int userId)
         {
             try
             {
-                // Obtengo el usuario autenticado
+
                 var user = HttpContext.User;
 
-                // Llama al servicio para obtener el historial de reservas
+
                 var bookingHistory = _bookingService.GetHistory(userId, user);
 
-                // Verifica si el historial es nulo o vacío
+
                 if (bookingHistory == null || bookingHistory.Count == 0)
                 {
                     return NotFound("No se encontró historial de reservas para el usuario.");
@@ -144,7 +142,7 @@ namespace movie_api.Controllers
 
 
         //---------------------------------------------------------------------------------------------------------
-        // Desactivar un user, siempre y cuando no tenga reservaspendientes
+
         [HttpDelete("{idUser}/deactivate")]
         [Authorize(Roles = "Admin, Client")] 
         public IActionResult DeactivateUser(int idUser)

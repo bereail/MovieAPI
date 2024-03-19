@@ -29,7 +29,7 @@ namespace MOVIE_API.Controllers
 
 
         //----------------------------------------------------------------------------------------------------------------------------------------
-        //Trae un usuario por su id -> Admin
+
         [Authorize(Roles = "Admin")]
         [HttpGet("getUserById/{id}")]
 
@@ -37,28 +37,28 @@ namespace MOVIE_API.Controllers
         {
             try
             {
-                //  obtener el usuario por ID
+               
                 var user = _userService.GetUserById(id);
 
                 if (user == null)
                 {
-                    // Devuelve 404,si el usuario no se encuentra
+                  
                     return NotFound($"No se encontró ningún usuario con ID {id}");
                 }
 
-                // Devuelve el user encontrado 
+               
                 return Ok(user);
             }
             catch (Exception ex)
             {
-                // Error,  500 Internal Server Error
+              
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.Message}");
             }
 
         }
 
         //----------------------------------------------------------------------------------------------------------------------------------------
-        //Obtener las booking asociadas ingresando el id user -> Admin
+
 
         [HttpGet("{userId}/bookingIds")]
         [Authorize(Roles = "Admin")]
@@ -80,7 +80,7 @@ namespace MOVIE_API.Controllers
 
 
         //------------------------------------------------------------------------------------------------------------------------------------------
-        //Funciòn para traer todos los usuarios -> Admin
+
 
         [HttpGet("users")]
         [Authorize(Roles = "Admin")]
@@ -99,7 +99,7 @@ namespace MOVIE_API.Controllers
         }
 
         //-----------------------------------------------------------------------------------------------------------------------
-        // Función para obtener todos los administradores  -> Admin
+
 
         [HttpGet("getAdmins")]
         [Authorize(Roles = "Admin")]
@@ -120,7 +120,6 @@ namespace MOVIE_API.Controllers
 
         //-----------------------------------------------------------------------------------------------------------------------------
 
-        //Funciòn para traer a todos los clientes  -> Admin
         [HttpGet("getClients")]
         [Authorize(Roles = "Admin")]
         public IActionResult GetClients()
@@ -142,7 +141,7 @@ namespace MOVIE_API.Controllers
 
 
         //--------------------------------------------------------------------------------------------------------------------------------------
-        //Reactiar un usuario eliminado -> Admin o mismo user
+
 
         [HttpPatch("{id}/reactivate")]
         public IActionResult ReactivateUser(int id)

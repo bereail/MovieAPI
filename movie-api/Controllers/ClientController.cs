@@ -21,7 +21,6 @@ namespace MOVIE_API.Controllers
 
 
         //-----------------------------------------------------------------------------------------------------------------------------------------6
-        //crear un nuevo cliente y asociarlo a un booking id  -> Cuaqluier persona
 
 
         [HttpPost("CreateClient")]
@@ -29,24 +28,24 @@ namespace MOVIE_API.Controllers
         {
             try
             {
-                // Llama al servicio para crear un cliente y obtiene el ID del user creado
+
                 int userId = _clientService.CreateClient(clientDto);
 
-                // Verifica si el usuario se creo exitosamente
+
                 if (userId != -1)
                 {
-                    // Si el usuario se creo con éxito, devuelve Ok
+
                     return Ok(new { Message = "Client created successfully."});
                 }
                 else
                 {
-                    // Si ya existe un usuario con el mismo email, devuelve error
+
                     return BadRequest(new { Message = "User with the same email already exists." });
                 }
             }
             catch (Exception ex)
             {
-                // Error
+
                 return BadRequest(new { Message = $"Error creating client: {ex.Message}" });
             }
         }

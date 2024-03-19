@@ -30,28 +30,24 @@ namespace MOVIE_API.Controllers
             _userComparisonService = userComparisonService;
         }
 
-        [HttpPost("authenticate")] //usamos POST ya que debemos enviar los datos para hacer el login
+        [HttpPost("authenticate")] 
         public ActionResult<string> Authenticate(AuthenticationRequestBody authenticationRequestBody)
         {
-            //Validar credenciales
+           
             var user = ValidateCredentials(authenticationRequestBody);
 
 
-            // Verificar si las credenciales son válidas
             if (user is null)
             {
-                //Credenciales invalidas
                 return Unauthorized("Credenciales no válidas");
             }
 
-            // Verificar si la cuenta está deshabilitada
             if (!user.IsActive)
             {
                 return Unauthorized("La cuenta está deshabilitada");
             }
 
 
-            //Creo el Token
             var securityPassword = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_config["Authentication:SecretForKey"]));
 
             var credentials = new SigningCredentials(securityPassword, SecurityAlgorithms.HmacSha256);
@@ -72,7 +68,6 @@ namespace MOVIE_API.Controllers
             var tokenToReturn = new JwtSecurityTokenHandler()
                 .WriteToken(jwtSecurityToken);
 
-            // Retornar el token JWT
             return Ok(tokenToReturn);
         }
 

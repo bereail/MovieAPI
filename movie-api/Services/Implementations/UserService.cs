@@ -25,7 +25,6 @@ namespace movie_api.Services.Implementations
 
 
         //----------------------------------------------------------------------------------------------------------------------------------------
-        //LOGIN
         public User? ValidateUser(AuthenticationRequestBody authenticationRequestBody)
         {
             return _movieDbContext.Users.FirstOrDefault(user =>
@@ -64,7 +63,6 @@ namespace movie_api.Services.Implementations
 
 
         //----------------------------------------------------------------------------------------------------------------------------------------
-        //Trae un usuario por su id
         public User? GetUserById(int id)
         {
             return _movieDbContext.Users.SingleOrDefault(u => u.Id == id);
@@ -72,10 +70,8 @@ namespace movie_api.Services.Implementations
 
 
         //----------------------------------------------------------------------------------------------------------------------------------------
-        //Obtener las booking asociadas ingresnado el id user -> Admin
         public List<int> GetBookingIdsByUserId(int userId)
         {
-            // Utiliza LINQ para seleccionar los bookingId asociados al userId
             var bookingIds = _movieDbContext.Bookings
                 .Where(b => b.IdUser == userId)
                 .Select(b => b.Id)
@@ -87,7 +83,6 @@ namespace movie_api.Services.Implementations
 
 
         //----------------------------------------------------------------------------------------------------------------------------------------
-        //Busca un usuario por su email -> funciòn para el login
         public User? GetUserByEmail(string email)
         {
             return _movieDbContext.Users.SingleOrDefault(u => u.Email == email);
@@ -97,7 +92,6 @@ namespace movie_api.Services.Implementations
 
 
         //----------------------------------------------------------------------------------------------------------------------------------------
-        // Función para obtener todas los usuarios registrados  -> Admin
 
         public List<UserDto> GetUsers()
         {
@@ -114,7 +108,6 @@ namespace movie_api.Services.Implementations
             }
         }
 
-        // Mapeo de entidad Person a DTO
         public UserDto MapToDto(User user)
         {
             return new UserDto
@@ -129,7 +122,6 @@ namespace movie_api.Services.Implementations
 
 
         //----------------------------------------------------------------------------------------------------------------------------------------
-        // Función para obtener todos los administradores  -> Admin
 
         public IEnumerable<AdminDto> GetAdmins()
         {
@@ -160,32 +152,28 @@ namespace movie_api.Services.Implementations
 
         //-----------------------------------------------------------------------------------------------------------------------------
 
-        //funcion para traer a todos los clientes  -> Admin
 
         public IEnumerable<ClientDto> GetClients()
         {
             try
             {
-                // Obtener todos los usuarios con el rol "Client" desde la base de datos
+
                 var clients = _movieDbContext.Users.Where(u => u.Rol == "Client").ToList();
 
-                // Mapear los usuarios a objetos ClientDto usando la función MapToClientDto
                 var clientDtos = clients.Select(MapToClientDto).ToList();
 
-                // Devolver la lista de ClientDto
+
                 return clientDtos;
             }
             catch (Exception ex)
             {
-                // error
+
                 Console.WriteLine($"Error al obtener clientes: {ex.Message}");
 
-                // En caso de error, devolver una lista vacía de ClientDto
                 return Enumerable.Empty<ClientDto>();
             }
         }
 
-        // Función para mapear un objeto User a un objeto ClientDto
         private ClientDto MapToClientDto(User user)
         {
             return new ClientDto
@@ -200,20 +188,18 @@ namespace movie_api.Services.Implementations
 
 
         //----------------------------------------------------------------------------------------------------------------------------------------
-        //Descativar un user -> Admin o mismo user
-        //se consume en el service Booking
+
         public void DisableAccount(int userId)
         {
-            // Obtener el usuario de la base de datos usando GetUserById
             var user = GetUserById(userId);
 
-            // Verificar si el usuario existe y no está deshabilitado
+
             if (user != null && user.IsActive)
             {
-                // Deshabilitar la cuenta
+
                 user.IsActive = false;
 
-                // Guardar los cambios en la base de datos
+
                 _movieDbContext.SaveChanges();
             }
 
@@ -223,7 +209,7 @@ namespace movie_api.Services.Implementations
 
 
         //--------------------------------------------------------------------------------------------------------------------------------------
-        //Reactiar un usuario desactivado -> Admin o mismo user
+
         public BaseResponse ReactivateUser(int idUser, ClaimsPrincipal user)
         {
             var existingUser = GetUserById(idUser);
@@ -232,7 +218,7 @@ namespace movie_api.Services.Implementations
             {
                 try
                 {
-                    // Verificar si el usuario actual tiene permiso para reactivar la cuenta del usuario específico
+
                     if (!_userComparisonService.CompareUserIdWithLoggedInUser(idUser, user))
                     {
                         return new BaseResponse
@@ -242,7 +228,6 @@ namespace movie_api.Services.Implementations
                         };
                     }
 
-                    // Cambiar el estado IsActive a true para reactivar el usuario
                     existingUser.IsActive = true;
 
                     _movieDbContext.SaveChanges();

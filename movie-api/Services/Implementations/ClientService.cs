@@ -22,17 +22,15 @@ namespace MOVIE_API.Services.Implementations
             _bookingService = bookingService;  
         }
 
-        //Crea un nuevo cliente y lo asoocia a un nuevo booking id
+
         public int CreateClient(ClientCreateDto clientDto)
         {
                 try
                 {
-                    // Verificar si el usuario ya existe y no tiene un rol de administrador
                     var existingUser = _movieDbContext.Users.SingleOrDefault(u => u.Email == clientDto.Email);
 
                     if (existingUser == null)
                     {
-                        // Crear un nuevo objeto de tipo User y le asigna los valores del DTO
                         User newUser = new User
                         {
                             Name = clientDto.Name,
@@ -43,28 +41,25 @@ namespace MOVIE_API.Services.Implementations
                             IsActive = clientDto.IsActive,
                         };
 
-                    // Crear un nuevo objeto de tipo Client 
                     Client newClient = new Client();
                     {
                         
                     };
                     
-                    // Asocia el cliente al usuario
+
                     newUser.Clients.Add(newClient);
 
-                    // Agrega el nuevo user a la db
+
                     _movieDbContext.Users.Add(newUser);
                         _movieDbContext.SaveChanges();
 
-                    // Luego de crear el cliente, crea una nueva reserva asociada a ese cliente
                     _bookingService.AddNewBooking(newUser.Id);
 
-                    return newUser.Id;  // Devolver el Id del nuevo user
+                    return newUser.Id;  
 
                     }
                     else
                     {
-                        // Usuario ya existe
                         return -1;
                     }
                 }

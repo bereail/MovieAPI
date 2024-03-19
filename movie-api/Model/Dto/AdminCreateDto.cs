@@ -20,7 +20,6 @@ namespace MOVIE_API.Models.DTO
         public string EmployeeNum { get; set; }
 
         [JsonIgnore]
-        // Establecer IsActive a true por defecto
         public bool IsActive { get; set; } = true;
     }
 }

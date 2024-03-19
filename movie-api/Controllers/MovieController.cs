@@ -22,7 +22,7 @@ namespace movie_api.Controllers
 
         
         //-----------------------------------------------------------------------------------------------------------------
-        //Buscar una pelicula por su Id -> Admin
+
         [HttpGet("getMovie/{id}")]
         [Authorize(Roles = "Admin")]
         public IActionResult GetMovieById(int id)
@@ -41,39 +41,38 @@ namespace movie_api.Controllers
 
 
 //----------------------------------------------------------------------------------------------------
-//Trae todas las peliculas y las ordenas segun su state
-//Solo el admin puede ver todas las peliculas
-//El user solo puede ver las pelicula disponibles
+
+
  [HttpGet("grouped-by-state")]
  public IActionResult GetMoviesGroupedByState()
  {
      try
      {
-         // Obtener el rol del usuario desde los claims
+
          string userRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
 
          IEnumerable<MovieDto> groupedMovies;
 
          if (userRole == "Admin")
          {
-             // Usuario con rol "admin", obtiene todas las películas
+
              var moviesGroupedByState = _movieService.GetMoviesGroupedByState();
              groupedMovies = moviesGroupedByState
                  .SelectMany(entry => entry.Value.Select(movieDto => movieDto))
-                 .OrderBy(movieDto => movieDto.State).ToList(); // Ordenar por estado de forma descendente
+                 .OrderBy(movieDto => movieDto.State).ToList();
          }
          else if (userRole == "Client")
          {
-             // Usuario con rol "cliente", obtiene solo las películas con estado "available"
+
              var moviesGroupedByState = _movieService.GetMoviesGroupedByState();
              groupedMovies = moviesGroupedByState
                  .Where(entry => entry.Key == MovieState.Available)
                  .SelectMany(entry => entry.Value.Select(movieDto => movieDto))
-                  .OrderBy(movieDto => movieDto.State).ToList(); // Ordenar por estado de forma descendente
+                  .OrderBy(movieDto => movieDto.State).ToList(); 
          }
          else
          {
-             //error
+
              return StatusCode(403, "Acceso no autorizado");
          }
 
@@ -88,7 +87,6 @@ namespace movie_api.Controllers
 
 
         //----------------------------------------------------------------------------------------------------
-        //Post para crear peliculas -> Admin
 
         [HttpPost("createMovie")]
         [Authorize(Roles = "Admin")]
@@ -106,8 +104,7 @@ namespace movie_api.Controllers
 
 
         //------------------------------------------------------------------------------------------------------------------
-        //Eliminar pelicula (no elimina directo de la db, modifica su estado a no disponible) -> ADMIN
-        //No se podra alquilar una peliculas con el state delete
+
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("{movieId}")]
@@ -120,7 +117,7 @@ namespace movie_api.Controllers
 
 
         //------------------------------------------------------------------------------------------------------------------
-        //Actualizar propiedades de una pelicula -> Admin
+
 
         [Authorize(Roles = "Admin")]
         [HttpPut("update-state/{movieId}")]
@@ -148,7 +145,6 @@ namespace movie_api.Controllers
 
 
         //------------------------------------------------------------------------------------------------------------------
-        // Endpoint para buscar películas por título
 
         [HttpGet("SearchMoviesByTitle/{title}")]
         public ActionResult<Movie> SearchMoviesByTitle(string title)

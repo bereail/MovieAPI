@@ -20,17 +20,14 @@ namespace MOVIE_API.Services.Implementations
 
         /*-------------------------------------------------------------------------------------------------------------*/
 
-        //Crear Admin y lo asocia a un nuevo booking id -> Admin
         public int CreateAdmin(AdminCreateDto adminDto)
         {
             try
             {
-                // Verificar si el user ya existe y no tiene un rol de administrador
                 var existingUser = _moviedbContext.Users.SingleOrDefault(u => u.Email == adminDto.Email);
 
                 if (existingUser == null)
                 {
-                    // Crear un nuevo objeto de tipo User y asignarle los valores del DTO
                     User newUser = new User
                     {
                         Name = adminDto.Name,
@@ -41,16 +38,13 @@ namespace MOVIE_API.Services.Implementations
                         IsActive = adminDto.IsActive,
                     };
 
-                    // Crear un nuevo objeto de tipo Admin y asignarle los valores del DTO
                     Admin newAdmin = new Admin
                     {
                         EmployeeNum = adminDto.EmployeeNum
                     };
 
-                    // Asociar el admin al user
                     newUser.Admins.Add(newAdmin);
 
-                    // Agregar el nuevo usuario a la base de datos
                     _moviedbContext.Users.Add(newUser);
                     _moviedbContext.SaveChanges();
 
@@ -58,7 +52,6 @@ namespace MOVIE_API.Services.Implementations
                 }
                 else
                 {
-                    // Usuario ya existe
                     return -1;
                 }
             }
